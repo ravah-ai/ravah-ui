@@ -234,15 +234,15 @@ function PipelineCopilot() {
   );
 }
 
-// ---------- Fancy Beyond DORA Metrics Calculator ----------
+// ---------- DORA Calculator ----------
 function DoraCalculator() {
   const [deploys, setDeploys] = useState(20);
-  const [leadTime, setLeadTime] = useState(2); // days
+  const [leadTime, setLeadTime] = useState(2);
   const [failed, setFailed] = useState(2);
-  const [mttr, setMttr] = useState(1); // hours
+  const [mttr, setMttr] = useState(1);
   const [mttd, setMttd] = useState(0.5);
   const [mtti, setMtti] = useState(0.5);
-  const [flowEff, setFlowEff] = useState(70); // %
+  const [flowEff, setFlowEff] = useState(70);
 
   const cfr = useMemo(() => (deploys > 0 ? (failed / deploys) * 100 : 0), [deploys, failed]);
 
@@ -256,38 +256,37 @@ function DoraCalculator() {
       default: return "-";
     }
   };
-
   const guidance = (k, v) => {
     const b = band(k, v);
     const advice = {
       deploys: {
         Elite: "World-class velocity. Keep stability safeguards in place.",
-        High: "Great cadence. Consider smaller batch sizes to push toward Elite.",
-        Medium: "Room to improve. Automate more steps and decouple services.",
-        Low: "Increase automation and reduce manual gates to ship faster.",
+        High: "Great cadence. Consider smaller batches to push toward Elite.",
+        Medium: "Automate more and decouple services.",
+        Low: "Reduce manual gates to ship faster.",
       },
       leadTime: {
         Elite: "Excellent flow from commit to prod.",
-        High: "Strong. Trim waiting time in CI queues.",
-        Medium: "Optimize tests and parallelism.",
-        Low: "Break down changes; address environment waits.",
+        High: "Strong. Trim CI queue waits.",
+        Medium: "Optimize tests & parallelism.",
+        Low: "Break down changes; fix env waits.",
       },
       cfr: {
-        Elite: "Very stable. Maintain rigorous reviews and tests.",
-        High: "Healthy. Target flaky tests and risky areas.",
-        Medium: "Investigate rollback causes; add pre-merge checks.",
-        Low: "Focus on quality gates and canary releases.",
+        Elite: "Very stable. Keep rigorous tests.",
+        High: "Healthy. Target flaky tests.",
+        Medium: "Investigate rollbacks; add pre-merge checks.",
+        Low: "Stronger quality gates and canaries.",
       },
       mttr: {
-        Elite: "Rapid recovery. Keep incident playbooks fresh.",
-        High: "Solid. Improve auto-rollbacks and runbooks.",
-        Low: "Invest in observability and rollback automation.",
+        Elite: "Rapid recovery. Keep playbooks fresh.",
+        High: "Solid. Improve auto-rollbacks.",
+        Low: "Invest in observability & automation.",
       },
       flowEff: {
         Elite: "Minimal waste. Great flow.",
-        High: "Good. Reduce handoffs further.",
-        Medium: "Target biggest sources of wait time.",
-        Low: "Map value stream; eliminate bottlenecks.",
+        High: "Good. Reduce handoffs.",
+        Medium: "Target big wait sources.",
+        Low: "Map value stream; remove bottlenecks.",
       },
     };
     return advice[k]?.[b] || "";
@@ -319,18 +318,15 @@ function DoraCalculator() {
       <Container>
         <h2 className="text-3xl font-semibold mb-6">Beyond DORA Metrics Calculator</h2>
         <div className="grid gap-8 md:grid-cols-2">
-          {/* Input Side */}
           <div className="space-y-6 bg-white/5 p-4 rounded-xl">
             <InputSlider label="Deploys per period" description="How many times code is deployed per measurement period." value={deploys} setValue={setDeploys} min={0} max={100} step={1} unit=""/>
-            <InputSlider label="Lead Time (days)" description="Average time taken from commit to production." value={leadTime} setValue={setLeadTime} min={0} max={30} step={0.5} unit="d"/>
+            <InputSlider label="Lead Time (days)" description="Average time from commit to production." value={leadTime} setValue={setLeadTime} min={0} max={30} step={0.5} unit="d"/>
             <InputSlider label="Failed Deploys" description="Number of failed or rolled-back deployments." value={failed} setValue={setFailed} min={0} max={50} step={1} unit=""/>
             <InputSlider label="MTTR (hours)" description="Mean Time to Recovery after failure." value={mttr} setValue={setMttr} min={0} max={48} step={0.5} unit="h"/>
             <InputSlider label="MTTD (hours)" description="Mean Time to Detection of issues." value={mttd} setValue={setMttd} min={0} max={48} step={0.5} unit="h"/>
             <InputSlider label="MTTI (hours)" description="Mean Time to Intervention after detection." value={mtti} setValue={setMtti} min={0} max={48} step={0.5} unit="h"/>
             <InputSlider label="Flow Efficiency (%)" description="Ratio of active work time to total time." value={flowEff} setValue={setFlowEff} min={0} max={100} step={1} unit="%"/>
           </div>
-
-          {/* Output Side */}
           <div className="space-y-6">
             <table className="w-full text-sm border border-white/10 rounded-lg overflow-hidden">
               <thead className="bg-white/10">
@@ -351,7 +347,6 @@ function DoraCalculator() {
                 <tr><td className="px-3 py-2">Flow Efficiency</td><td>{flowEff}%</td><td>{band("flowEff", flowEff)}</td><td className="text-white/70">{guidance("flowEff", flowEff)}</td></tr>
               </tbody>
             </table>
-
             <div className="h-56 bg-black/40 rounded p-2">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={chartData}>
@@ -391,7 +386,7 @@ function ContactFooter() {
         <form className="mt-4 grid gap-3" onSubmit={(e)=>e.preventDefault()}>
           <input className="rounded-xl border border-white/10 bg-black/40 p-3" placeholder="Your name"/>
           <input className="rounded-xl border border-white/10 bg-black/40 p-3" placeholder="Work email"/>
-          <PrimaryButton target="contact">Request Demo</PrimaryButton>
+          <button type="submit" className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-teal-400 to-indigo-500 px-5 py-3 text-white shadow hover:opacity-95">Request Demo</button>
         </form>
       </Container>
       <div className="mt-8 text-center text-xs text-white/50">© {new Date().getFullYear()} Ravah.ai. All rights reserved.</div>
@@ -399,7 +394,7 @@ function ContactFooter() {
   );
 }
 
-function Site() {
+function App() {
   return (
     <main className="min-h-screen bg-[#070815] font-sans">
       <Nav />
@@ -413,4 +408,4 @@ function Site() {
   );
 }
 
-export default function App(){ return <Site/> }
+export default App;
