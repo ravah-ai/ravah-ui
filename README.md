@@ -1,23 +1,18 @@
+# Ravah.ai — Clean React Site (Vite + Netlify)
 
-# Ravah.ai — Netlify-ready React site (Vite + Tailwind)
-
-## Local Dev
+## Quick start
 ```bash
-npm install
+npm i
 npm run dev
 ```
+Open http://localhost:5173
 
-## Build
-```bash
-npm run build
-# Output goes to dist/
-```
+## Build & Deploy (Netlify)
+- Build: `npm run build`
+- Output: `dist/`
+- Netlify reads `netlify.toml` and uses `_redirects` for SPA routing.
+- Ensure `public/FullLogo_Transparent.png` exists (logo referenced as `/FullLogo_Transparent.png`).
 
-## Netlify
-- Includes `netlify.toml` to run `npm run build` and publish `dist`.
-- SPA fallback via both `netlify.toml` and `public/_redirects`.
-
-## Logo
-A logo is already included under `public/` as:
-- `FullLogo_Transparent (1).png` (and `FullLogo_Transparent.png` as fallback)
-You can replace these with your own.
+## Notes
+- Animated visuals are **SVG-based** and sized responsively to avoid oversized figures.
+- Calculator is compact with sliders; no heavy chart deps.
