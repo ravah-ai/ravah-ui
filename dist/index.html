@@ -257,7 +257,7 @@
     }
 
     // ---------------- Beyond DORA Calculator ----------------
-    function DoraCalculator() {
+    function PipelinePulseCalculator() {
       const [deploys, setDeploys] = useState(20);
       const [leadTime, setLeadTime] = useState(2);  // days
       const [failed, setFailed] = useState(2);
@@ -340,7 +340,33 @@
       return (
         <section id="calculator" className="border-t border-white/10 bg-[#070815] py-16 text-white">
           <Container>
-            <h2 className="text-3xl font-semibold mb-6">Beyond DORA Metrics Calculator</h2>
+            <h2 className="text-3xl font-semibold mb-6">Pipeline Pulse</h2>
+            <p className="text-lg text-gray-400 mb-6">
+              Beyond DORA Metrics — heartbeat of your delivery pipeline
+            </p>
+             {/* Explanation block */}
+            <div className="mb-6 text-gray-300 text-sm leading-relaxed space-y-3">
+              <p>
+                Pipeline Pulse measures not only the <strong>DORA metrics</strong> 
+                (Deployment Frequency, Lead Time, Change Failure Rate, MTTR) but also 
+                adds extended signals like <strong>MTTD</strong>, <strong>MTTI</strong>, 
+                and <strong>Flow Efficiency</strong>.
+              </p>
+              <p>
+                These metrics are aligned with the <strong>CALMS framework</strong> of DevOps:
+                <ul className="list-disc list-inside mt-2 space-y-1">
+                  <li><strong>Culture</strong> — collaboration & shared responsibility</li>
+                  <li><strong>Automation</strong> — CI/CD, testing, and infrastructure automation</li>
+                  <li><strong>Lean</strong> — faster feedback loops, reduced waste</li>
+                  <li><strong>Measurement</strong> — continuous metrics for visibility</li>
+                  <li><strong>Sharing</strong> — transparency of practices and learnings</li>
+                </ul>
+              </p>
+              <p>
+                Together, these dimensions provide a holistic picture of your delivery performance, 
+                resilience, and organizational maturity.
+              </p>
+            </div>
             <div className="grid gap-8 md:grid-cols-2">
               {/* Inputs */}
               <div className="space-y-6 bg-white/5 p-4 rounded-xl">
@@ -442,7 +468,7 @@
           <Hero />
           <Features />
           <PipelineCopilot />
-          <DoraCalculator />
+          <PipelinePulseCalculator />
           <WhyCTA />
           <ContactFooter />
         </main>
