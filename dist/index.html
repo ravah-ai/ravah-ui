@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Ravah.ai — Plug. Scale. Repeat.</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Tailwind via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- React 18 UMD -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <!-- Recharts UMD -->
+  <script src="https://unpkg.com/recharts/umd/Recharts.min.js"></script>
+  <!-- Framer Motion UMD (optional; we’ll fallback if it’s missing) -->
+  <script src="https://unpkg.com/framer-motion/dist/framer-motion.umd.js"></script>
+  <!-- Babel so we can write JSX in this single file -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    html,body{background:#070815;}
+    html{scroll-behavior:smooth}
+  </style>
+</head>
+<body class="bg-[#070815] text-white">
+  <div id="root"></div>
+
+  <!-- IMPORTANT: use data-presets so JSX compiles -->
+  <script type="text/babel" data-presets="env,react">
+    const React = window.React;
+    const ReactDOM = window.ReactDOM;
+    const { useState, useMemo } = React;
+
+    // ----- Recharts guard (prevents crashes if CDN fails) -----
+    const R = window.Recharts || {};
+    const HasRecharts = !!(R.LineChart && R.Line && R.XAxis && R.YAxis && R.CartesianGrid && R.Tooltip && R.ResponsiveContainer);
+    const { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } = R;
+
+    // ----- Framer Motion fallback -----
+    const FM = window.framerMotion;
+    const MotionDiv = (FM && FM.motion && FM.motion.div) ? FM.motion.div : (props) => <div {...props} />;
+
+    // ---------------- Utilities & UI bits ----------------
+    const cls = (...xs) => xs.filter(Boolean).join(" ");
+    const Container = ({ children, className = "" }) => (
+      <div className={cls("mx-auto w-full max-w-7xl px-4 md:px-6", className)}>{children}</div>
+    );
+    const Pill = ({ children, className = "" }) => (
+      <span className={cls("inline-flex items-center rounded-full border border-white/20 bg-white/5 px-3 py-1 text-xs text-white/80 backdrop-blur", className)}>
+        {children}
+      </span>
+    );
+    function scrollToId(id) {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+    const PrimaryButton = ({ children, target = "contact" }) => (
+      <button onClick={() => scrollToId(target)} className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-teal-400 to-indigo-500 px-5 py-3 text-white shadow hover:opacity-95">
+        {children}
+      </button>
+    );
+    const OutlineButton = ({ children, target = "calculator" }) => (
+      <button onClick={() => scrollToId(target)} className="inline-flex items-center gap-2 rounded-2xl border border-white/20 px-5 py-3 text-white/90 hover:border-white/40">
+        {children}
+      </button>
+    );
+
+    // ---------------- Logo (no process.env; robust fallbacks) ----------------
+    const LOGO_CANDIDATES = [
+      "./FullLogo_Transparent%20(1).png",
+      "./FullLogo_Transparent.png",
+      "./ravah-logo.png",
+      "./logo.png",
+    ];
+    function LogoImg({ className = "h-10 w-auto" }) {
+      const [idx, setIdx] = useState(0);
+      const onError = () => setIdx(i => Math.min(LOGO_CANDIDATES.length - 1, i + 1));
+      const src = LOGO_CANDIDATES[idx];
+      return (idx < LOGO_CANDIDATES.length - 1)
+        ? <img src={src} alt="Ravah.ai logo" className={className} onError={onError} />
+        : <span className="text-white font-semibold tracking-wide">ravah.ai</span>;
+    }
+
+    // ---------------- Nav ----------------
+    function Nav() {
+      const [open, setOpen] = useState(false);
+      const LinkBtn = ({ id, children }) => (
+        <button onClick={() => scrollToId(id)} className="hover:text-white">{children}</button>
+      );
+      return (
+        <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-[#070815]/80 backdrop-blur">
+          <Container className="flex h-16 items-center justify-between">
+            <button onClick={() => scrollToId("home")} className="flex items-center gap-2">
+              <LogoImg />
+            </button>
+            <nav className="hidden items-center gap-8 text-sm text-white/80 md:flex">
+              <LinkBtn id="features">Features</LinkBtn>
+              <LinkBtn id="pipeline">Pipeline Copilot</LinkBtn>
+              <LinkBtn id="calculator">DORA Calculator</LinkBtn>
+              <LinkBtn id="why">Why Ravah</LinkBtn>
+              <LinkBtn id="contact">Contact</LinkBtn>
+              <PrimaryButton>Get a Demo</PrimaryButton>
+            </nav>
+            <button className="md:hidden text-white" onClick={() => setOpen(!open)} aria-label="Toggle Menu">☰</button>
+          </Container>
+          {open && (
+            <div className="md:hidden border-t border-white/10 bg-[#070815] px-4 py-3 text-white/80">
+              {[
+                ["features","Features"],
+                ["pipeline","Pipeline Copilot"],
+                ["calculator","DORA Calculator"],
+                ["why","Why Ravah"],
+                ["contact","Contact"],
+              ].map(([id, label]) => (
+                <div key={id} className="py-1">
+                  <button onClick={() => { setOpen(false); scrollToId(id); }}>{label}</button>
+                </div>
+              ))}
+            </div>
+          )}
+        </header>
+      );
+    }
+
+    // ---------------- Animated visuals ----------------
+    function InfinityRibbon() {
+      return (
+        <div className="relative h-44 w-full max-w-md">
+          <svg viewBox="0 0 200 100" className="h-full w-full">
+            <defs>
+              <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#14b8a6" />
+                <stop offset="50%" stopColor="#6366f1" />
+                <stop offset="100%" stopColor="#ec4899" />
+              </linearGradient>
+            </defs>
+            <path d="M 10 50 C 40 10, 80 90, 100 50 C 120 10, 160 90, 190 50"
+              stroke="url(#grad1)" strokeWidth="8" fill="none" strokeLinecap="round">
+              <animate attributeName="stroke-dasharray" values="0,600;600,0;0,600" dur="6s" repeatCount="indefinite" />
+            </path>
+          </svg>
+        </div>
+      );
+    }
+    function SpherePulse() {
+      return (
+        <div className="relative h-32 w-32">
+          <svg viewBox="0 0 100 100" className="h-full w-full">
+            <defs>
+              <radialGradient id="g" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stopColor="#93c5fd" />
+                <stop offset="100%" stopColor="#3b82f6" />
+              </radialGradient>
+            </defs>
+            <circle cx="50" cy="50" r="30" fill="url(#g)">
+              <animate attributeName="r" values="26;34;26" dur="3s" repeatCount="indefinite" />
+            </circle>
+          </svg>
+        </div>
+      );
+    }
+    function RotatingCube() {
+      return (
+        <div className="relative h-28 w-28">
+          <svg viewBox="0 0 100 100" className="h-full w-full">
+            <g>
+              <polygon points="50,10 80,25 80,55 50,70 20,55 20,25"
+                fill="#0ea5e9" fillOpacity="0.25" stroke="#38bdf8" />
+              <animateTransform attributeName="transform" attributeType="XML"
+                type="rotate" from="0 50 40" to="360 50 40" dur="8s" repeatCount="indefinite" />
+            </g>
+          </svg>
+        </div>
+      );
+    }
+    function PipelineFlow() {
+      return (
+        <div className="relative h-36 w-full max-w-lg">
+          <svg viewBox="0 0 400 120" className="h-full w-full">
+            <defs>
+              <linearGradient id="pipe" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#22d3ee" /><stop offset="100%" stopColor="#6366f1" />
+              </linearGradient>
+            </defs>
+            <path d="M20,60 h80 a10,10 0 0 1 10,10 v0 a10,10 0 0 0 10,10 h60 a10,10 0 0 0 10,-10 v0 a10,10 0 0 1 10,-10 h80"
+              stroke="url(#pipe)" strokeWidth="10" fill="none" strokeLinecap="round" />
+            <circle r="5" fill="#a78bfa">
+              <animateMotion dur="5s" repeatCount="indefinite"
+                path="M20,60 h80 a10,10 0 0 1 10,10 v0 a10,10 0 0 0 10,10 h60 a10,10 0 0 0 10,-10 v0 a10,10 0 0 1 10,-10 h80" />
+            </circle>
+          </svg>
+        </div>
+      );
+    }
+
+    // ---------------- Sections ----------------
+    function Hero() {
+      return (
+        <section id="home" className="relative overflow-hidden bg-[#070815] text-white">
+          <Container className="relative grid min-h-[72vh] grid-cols-1 place-items-center gap-8 py-16 md:grid-cols-2">
+            <MotionDiv initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
+              <Pill>AI Copilot for DevOps</Pill>
+              <h1 className="mt-4 text-4xl font-bold leading-tight md:text-5xl">Plug. Scale. Repeat.</h1>
+              <p className="mt-4 text-white/80 md:text-lg">
+                Ravah.ai predicts risky changes, enforces quality gates, and gives you live & historical visibility across your CI/CD.
+                Safer releases. Faster delivery.
+              </p>
+              <div className="mt-6 flex items-center gap-3">
+                <PrimaryButton>Get a Demo</PrimaryButton>
+                <OutlineButton>Try the Calculator</OutlineButton>
+              </div>
+            </MotionDiv>
+            <InfinityRibbon />
+          </Container>
+        </section>
+      );
+    }
+
+    function Features() {
+      return (
+        <section id="features" className="border-t border-white/10 bg-[#0B0D20] py-16 text-white">
+          <Container className="grid grid-cols-1 gap-8 md:grid-cols-2 items-center">
+            <div>
+              <h2 className="text-3xl font-semibold">Smarter pipelines. Safer releases.</h2>
+              <p className="mt-3 text-white/70">Drop-in intelligence that works with Jenkins, GitHub, GitLab and your existing tooling.</p>
+              <div className="mt-6 grid grid-cols-2 gap-6 text-white/80 text-sm">
+                <div><p className="font-medium text-white">Predictive risk</p><p>Flag risky commits before merge and block policy violations.</p></div>
+                <div><p className="font-medium text-white">Quality gates</p><p>Coverage, lint, test, SAST, size and ownership checks.</p></div>
+                <div><p className="font-medium text-white">Live visibility</p><p>See deploy health and MTTR in real time across services.</p></div>
+                <div><p className="font-medium text-white">Beyond DORA</p><p>Flow efficiency, MTTD/MTTI and SLO-aware guidance.</p></div>
+              </div>
+            </div>
+            <div className="flex items-center justify-center gap-8">
+              <SpherePulse />
+              <RotatingCube />
+            </div>
+          </Container>
+        </section>
+      );
+    }
+
+    function PipelineCopilot() {
+      return (
+        <section id="pipeline" className="border-t border-white/10 bg-[#070815] py-16 text-white">
+          <Container className="grid grid-cols-1 gap-8 md:grid-cols-2 items-center">
+            <div>
+              <Pill>Pipeline Copilot</Pill>
+              <h2 className="mt-3 text-3xl font-semibold md:text-4xl">Your Intelligent CI/CD Partner</h2>
+              <p className="mt-3 text-white/70">
+                Ravah’s Pipeline Copilot automates build, test, and deploy workflows with predictive AI.
+                It identifies risky commits before merge, ensures compliance with quality gates,
+                and provides real-time visibility into deployment health.
+              </p>
+            </div>
+            <PipelineFlow />
+          </Container>
+        </section>
+      );
+    }
+
+    // ---------------- Beyond DORA Calculator ----------------
+    function DoraCalculator() {
+      const [deploys, setDeploys] = useState(20);
+      const [leadTime, setLeadTime] = useState(2);  // days
+      const [failed, setFailed] = useState(2);
+      const [mttr, setMttr] = useState(1);          // hours
+      const [mttd, setMttd] = useState(0.5);
+      const [mtti, setMtti] = useState(0.5);
+      const [flowEff, setFlowEff] = useState(70);   // %
+
+      const cfr = useMemo(() => (deploys > 0 ? (failed / deploys) * 100 : 0), [deploys, failed]);
+
+      const band = (metric, value) => {
+        switch (metric) {
+          case "deploys": return value >= 50 ? "Elite" : value >= 20 ? "High" : value >= 5 ? "Medium" : "Low";
+          case "leadTime": return value <= 1 ? "Elite" : value <= 7 ? "High" : value <= 14 ? "Medium" : "Low";
+          case "cfr": return value <= 5 ? "Elite" : value <= 15 ? "High" : value <= 30 ? "Medium" : "Low";
+          case "mttr": return value <= 1 ? "Elite" : value <= 24 ? "High" : "Low";
+          case "flowEff": return value >= 80 ? "Elite" : value >= 60 ? "High" : value >= 40 ? "Medium" : "Low";
+          default: return "-";
+        }
+      };
+      const guidance = (k, v) => {
+        const b = band(k, v);
+        const advice = {
+          deploys: {
+            Elite: "World-class velocity. Keep stability safeguards in place.",
+            High: "Great cadence. Consider smaller batches to push toward Elite.",
+            Medium: "Automate more steps and decouple services.",
+            Low: "Increase automation and reduce manual gates to ship faster.",
+          },
+          leadTime: {
+            Elite: "Excellent flow from commit to prod.",
+            High: "Strong. Trim waiting time in CI queues.",
+            Medium: "Optimize tests and parallelism.",
+            Low: "Break down changes; address environment waits.",
+          },
+          cfr: {
+            Elite: "Very stable. Maintain rigorous reviews and tests.",
+            High: "Healthy. Target flaky tests and risky areas.",
+            Medium: "Investigate rollbacks; add pre-merge checks.",
+            Low: "Focus on stronger quality gates and canary releases.",
+          },
+          mttr: {
+            Elite: "Rapid recovery. Keep incident playbooks fresh.",
+            High: "Solid. Improve auto-rollbacks and runbooks.",
+            Low: "Invest in observability and rollback automation.",
+          },
+          flowEff: {
+            Elite: "Minimal waste. Great flow.",
+            High: "Good. Reduce handoffs further.",
+            Medium: "Target biggest sources of wait time.",
+            Low: "Map value stream; eliminate bottlenecks.",
+          },
+        };
+        return advice[k]?.[b] || "";
+      };
+
+      const chartData = [
+        { name: "Deploys", value: deploys },
+        { name: "LeadTime", value: leadTime },
+        { name: "CFR", value: cfr },
+        { name: "MTTR", value: mttr },
+        { name: "MTTD", value: mttd },
+        { name: "MTTI", value: mtti },
+        { name: "FlowEff", value: flowEff }
+      ];
+
+      const InputSlider = ({ label, description, value, setValue, min, max, step, unit }) => (
+        <div className="space-y-1">
+          <div className="flex justify-between items-center">
+            <label className="text-sm font-medium">{label}</label>
+            <span className="text-xs text-white/60">{value}{unit}</span>
+          </div>
+          <input type="range" min={min} max={max} step={step} value={value}
+            onChange={(e)=>setValue(Number(e.target.value))}
+            className="w-full accent-teal-400" />
+          <p className="text-xs text-white/60">{description}</p>
+        </div>
+      );
+
+      return (
+        <section id="calculator" className="border-t border-white/10 bg-[#070815] py-16 text-white">
+          <Container>
+            <h2 className="text-3xl font-semibold mb-6">Beyond DORA Metrics Calculator</h2>
+            <div className="grid gap-8 md:grid-cols-2">
+              {/* Inputs */}
+              <div className="space-y-6 bg-white/5 p-4 rounded-xl">
+                <InputSlider label="Deploys per period" description="How many times code is deployed per measurement period."
+                  value={deploys} setValue={setDeploys} min={0} max={100} step={1} unit="" />
+                <InputSlider label="Lead Time (days)" description="Average time taken from commit to production."
+                  value={leadTime} setValue={setLeadTime} min={0} max={30} step={0.5} unit=" d" />
+                <InputSlider label="Failed Deploys" description="Number of failed or rolled-back deployments."
+                  value={failed} setValue={setFailed} min={0} max={50} step={1} unit="" />
+                <InputSlider label="MTTR (hours)" description="Mean Time to Recovery after failure."
+                  value={mttr} setValue={setMttr} min={0} max={48} step={0.5} unit=" h" />
+                <InputSlider label="MTTD (hours)" description="Mean Time to Detection of issues."
+                  value={mttd} setValue={setMttd} min={0} max={48} step={0.5} unit=" h" />
+                <InputSlider label="MTTI (hours)" description="Mean Time to Intervention after detection."
+                  value={mtti} setValue={setMtti} min={0} max={48} step={0.5} unit=" h" />
+                <InputSlider label="Flow Efficiency (%)" description="Ratio of active work time to total time."
+                  value={flowEff} setValue={setFlowEff} min={0} max={100} step={1} unit=" %" />
+              </div>
+
+              {/* Outputs */}
+              <div className="space-y-6">
+                <table className="w-full text-sm border border-white/10 rounded-lg overflow-hidden">
+                  <thead className="bg-white/10">
+                    <tr>
+                      <th className="px-3 py-2 text-left">Metric</th>
+                      <th className="px-3 py-2 text-left">Value</th>
+                      <th className="px-3 py-2 text-left">Band</th>
+                      <th className="px-3 py-2 text-left">Guidance</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><td className="px-3 py-2">Deployment Frequency</td><td>{deploys}/period</td><td>{band("deploys", deploys)}</td><td className="text-white/70">{guidance("deploys", deploys)}</td></tr>
+                    <tr><td className="px-3 py-2">Lead Time</td><td>{leadTime} days</td><td>{band("leadTime", leadTime)}</td><td className="text-white/70">{guidance("leadTime", leadTime)}</td></tr>
+                    <tr><td className="px-3 py-2">Change Failure Rate</td><td>{cfr.toFixed(1)}%</td><td>{band("cfr", cfr)}</td><td className="text-white/70">{guidance("cfr", cfr)}</td></tr>
+                    <tr><td className="px-3 py-2">MTTR</td><td>{mttr} hrs</td><td>{band("mttr", mttr)}</td><td className="text-white/70">{guidance("mttr", mttr)}</td></tr>
+                    <tr><td className="px-3 py-2">MTTD</td><td>{mttd} hrs</td><td>-</td><td className="text-white/70">Lower is better — shrink detection time with alerts and SLOs.</td></tr>
+                    <tr><td className="px-3 py-2">MTTI</td><td>{mtti} hrs</td><td>-</td><td className="text-white/70">Lower is better — automate triage and on-call routing.</td></tr>
+                    <tr><td className="px-3 py-2">Flow Efficiency</td><td>{flowEff}%</td><td>{band("flowEff", flowEff)}</td><td className="text-white/70">{guidance("flowEff", flowEff)}</td></tr>
+                  </tbody>
+                </table>
+
+                <div className="h-56 bg-black/40 rounded p-2">
+                  {HasRecharts ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={chartData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#444" />
+                        <XAxis dataKey="name" stroke="#aaa" />
+                        <YAxis stroke="#aaa" />
+                        <Tooltip />
+                        <Line type="monotone" dataKey="value" stroke="#14b8a6" strokeWidth={3} dot={{ r: 4 }} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="h-full w-full grid place-items-center text-white/70 text-sm">
+                      Chart unavailable (Recharts CDN not loaded).
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </Container>
+        </section>
+      );
+    }
+
+    function WhyCTA() {
+      return (
+        <section id="why" className="border-t border-white/10 bg-[#0B0D20] py-16 text-white">
+          <Container>
+            <h2 className="text-3xl font-semibold">Stop flying blind. Ship with foresight.</h2>
+            <p className="mt-3 text-white/70">Ravah.ai turns raw CI signals into decisions and enforces policies automatically.</p>
+          </Container>
+        </section>
+      );
+    }
+
+    function ContactFooter() {
+      return (
+        <section id="contact" className="border-t border-white/10 bg-[#070815] py-16 text-white">
+          <Container>
+            <h3 className="text-2xl font-semibold">Get a demo</h3>
+            <form className="mt-4 grid gap-3" onSubmit={(e)=>e.preventDefault()}>
+              <input className="rounded-xl border border-white/10 bg-black/40 p-3" placeholder="Your name"/>
+              <input className="rounded-xl border border-white/10 bg-black/40 p-3" placeholder="Work email"/>
+              <PrimaryButton target="contact">Request Demo</PrimaryButton>
+            </form>
+          </Container>
+          <div className="mt-8 text-center text-xs text-white/50">
+            © {new Date().getFullYear()} Ravah.ai. All rights reserved.
+          </div>
+        </section>
+      );
+    }
+
+    function Site() {
+      return (
+        <main className="min-h-screen bg-[#070815] font-sans">
+          <Nav />
+          <Hero />
+          <Features />
+          <PipelineCopilot />
+          <DoraCalculator />
+          <WhyCTA />
+          <ContactFooter />
+        </main>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<Site />);
+  </script>
+</body>
+</html>
