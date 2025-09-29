@@ -44,7 +44,7 @@ export default function Calculator(){
 
   return (
     <div className="container" id="calculator" style={{padding:'28px 0'}}>
-      <h3 style={{margin:'0 0 10px'}}>Beyond DORA Metrics Calculator</h3>
+      <h3 style={{margin:'0 0 10px'}}>Pipeline Pulse Calculator</h3>
       <div className="calculator">
         <div className="panel">
           {row('Deployment Frequency (per day)','Elite > 1/day; higher is better.',

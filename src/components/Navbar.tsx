@@ -10,7 +10,7 @@ export default function Navbar(){
         </div>
         <div className="nav-links">
           <a href="#features">Features</a>
-          <a href="#calculator">Beyond DORA</a>
+          <a href="#calculator">Pipeline Pulse</a>
           <a href="#contact">Contact</a>
         </div>
       </div>

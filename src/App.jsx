@@ -69,7 +69,7 @@ function Nav() {
         <nav className="hidden items-center gap-8 text-sm text-white/80 md:flex">
           <LinkBtn id="features">Features</LinkBtn>
           <LinkBtn id="pipeline">Pipeline Copilot</LinkBtn>
-          <LinkBtn id="calculator">DORA Calculator</LinkBtn>
+          <LinkBtn id="calculator">Pipeline Pulse Calculator</LinkBtn>
           <LinkBtn id="why">Why Ravah</LinkBtn>
           <LinkBtn id="contact">Contact</LinkBtn>
           <PrimaryButton>Get a Demo</PrimaryButton>
@@ -81,7 +81,7 @@ function Nav() {
           {[
             ["features","Features"],
             ["pipeline","Pipeline Copilot"],
-            ["calculator","DORA Calculator"],
+            ["calculator","Pipeline Pulse Calculator"],
             ["why","Why Ravah"],
             ["contact","Contact"],
           ].map(([id,label]) => (
@@ -234,8 +234,8 @@ function PipelineCopilot() {
   );
 }
 
-// ---------- DORA Calculator ----------
-function DoraCalculator() {
+// ---------- DORA/Pipeline Pulse Calculator ----------
+function PipelinePulseCalculator() {
   const [deploys, setDeploys] = useState(20);
   const [leadTime, setLeadTime] = useState(2);
   const [failed, setFailed] = useState(2);
@@ -401,7 +401,7 @@ function App() {
       <Hero />
       <Features />
       <PipelineCopilot />
-      <DoraCalculator />
+      <PipelinePulseCalculator />
       <WhyCTA />
       <ContactFooter />
     </main>
