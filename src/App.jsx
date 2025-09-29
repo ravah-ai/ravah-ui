@@ -1,6 +1,7 @@
 
 import React, { useMemo, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import {motion, AnimatePresence } from "framer-motion/client";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 function cls(...xs) { return xs.filter(Boolean).join(" "); }
